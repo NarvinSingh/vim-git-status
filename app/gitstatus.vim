@@ -1,7 +1,7 @@
 let s:debug = 0
 
 function! gitstatus#GetBranch(...)
-  let a:format      = get(a:000, 0, ' [%s]')
+  let a:format      = get(a:000, 0, '[%s]')
   let currentBranch = ''
   let curDir        = trim(system('pwd'))
   let fileDir       = expand('%:p:h')
@@ -22,7 +22,7 @@ function! gitstatus#GetBranch(...)
 endfunction
 
 function! gitstatus#GetStatus(...)
-  let a:format      = get(a:000, 0, ' [%s]')
+  let a:format      = get(a:000, 0, '[%s]')
   let status        = ''
   let cmd           = 'git status --porcelain ' . shellescape(expand('%:p'))
   let fullStatus    = system(cmd)
@@ -34,7 +34,15 @@ function! gitstatus#GetStatus(...)
   return status
 endfunction
 
-" augroup gitstatus
-  " autocmd!
-  " autocmd BufEnter,BufWritePost * echom gitstatus#GetBranch() . gitstatus#GetStatus()
-" augroup END
+let s:statusLine = ''
+
+function! gitstatus#GetStatusLine()
+  return s:statusLine
+endfunction
+
+augroup gitstatus
+  autocmd!
+  autocmd BufEnter,BufWritePost *
+    \ let s:statusLine = gitstatus#GetBranch() . gitstatus#GetStatus()
+augroup END
+
