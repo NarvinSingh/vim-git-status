@@ -47,14 +47,4 @@ augroup gitstatus
   autocmd!
   autocmd BufEnter,BufWritePost *
     \ let s:statusLines[bufnr('%')] = gitstatus#GetStatus()
-"  autocmd FocusGained * echom 'FocusGained'
-"  autocmd VimResized * echom 'VimResized'
-"  autocmd CmdwinEnter * echom 'CmdwinEnter'
-"  autocmd CmdwinLeave * echom 'CmdwinLeave'
-"  autocmd FileChangedShell * echom 'FileChangedShell'
-"  autocmd FileChangedShell * echom 'FileChangedShell'
-"  autocmd ShellCmdPost * echom 'ShellCmdPost'
-"  autocmd BufEnter * echom 'BufEnter'
-"  autocmd BufReadPost * echom 'BufReadPost'
-"  autocmd InsertLeave * echom 'InsertLeave'
 augroup END
