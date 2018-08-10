@@ -1,48 +1,60 @@
 let s:debug = 0
 
-function! gitstatus#GetBranch(...)
-  let a:format      = get(a:000, 0, '[%s]')
-  let currentBranch = ''
-  let curDir        = trim(system('pwd'))
-  let fileDir       = expand('%:p:h')
-  let chgDir        = curDir ==# fileDir ? 0 : 1
-  let cmd           = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
-  let cmd           .= 'git branch'
-  let cmd           .= chgDir ? '; cd ' . shellescape(curDir) : ''
-  let branches      = split(system(cmd), '\n')
+function! gitstatus#GetStatus(...)
+  let a:branchFormat  = get(a:000, 0, '[%s]')
+  let a:statusFormat  = get(a:000, 1, '[%s]')
+  let currentBranch   = ''
+  let status          = ''
+  let curDir          = trim(system('pwd'))
+  let fileDir         = expand('%:p:h')
+  let chgDir          = curDir ==# fileDir ? 0 : 1
+  let cmd             = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
+  let cmd             .= 'git branch'
+  let cmd             .= chgDir ? '; cd ' . shellescape(curDir) : ''
+  let branches        = split(system(cmd), '\n')
 
   for branch in branches
     if strcharpart(branch, 0, 1) ==# '*'
-        let currentBranch = printf(a:format, strcharpart(branch, 2))
+        let currentBranch = printf(a:branchFormat, strcharpart(branch, 2))
         break
     endif
   endfor
 
-  return currentBranch
-endfunction
+  if currentBranch !=# ''
+    let cmd           = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
+    let cmd           .= 'git status --porcelain ' . shellescape(expand('%:p'))
+    let cmd           .= chgDir ? '; cd ' . shellescape(curDir) : ''
+    let fullStatus    = system(cmd)
 
-function! gitstatus#GetStatus(...)
-  let a:format      = get(a:000, 0, '[%s]')
-  let status        = ''
-  let cmd           = 'git status --porcelain ' . shellescape(expand('%:p'))
-  let fullStatus    = system(cmd)
-
-  if strcharpart(fullStatus, 2, 1) ==# ' '
-   let status = printf(a:format, strcharpart(fullStatus, 0, 2))
+    let status = printf(
+      \ a:statusFormat,
+      \ strcharpart(fullStatus, 2, 1) ==# ' '
+      \   ? strcharpart(fullStatus, 0, 2)
+      \   : '  ')
   endif
 
-  return status
+  return currentBranch . status
 endfunction
 
 let s:statusLine = ''
+let s:statusLines = {}
 
-function! gitstatus#GetStatusLine()
-  return s:statusLine
+function! gitstatus#GetBufferStatus()
+  return get(s:statusLines, bufnr('%'), '')
 endfunction
 
 augroup gitstatus
   autocmd!
   autocmd BufEnter,BufWritePost *
-    \ let s:statusLine = gitstatus#GetBranch() . gitstatus#GetStatus()
+    \ let s:statusLines[bufnr('%')] = gitstatus#GetStatus()
+"  autocmd FocusGained * echom 'FocusGained'
+"  autocmd VimResized * echom 'VimResized'
+"  autocmd CmdwinEnter * echom 'CmdwinEnter'
+"  autocmd CmdwinLeave * echom 'CmdwinLeave'
+"  autocmd FileChangedShell * echom 'FileChangedShell'
+"  autocmd FileChangedShell * echom 'FileChangedShell'
+"  autocmd ShellCmdPost * echom 'ShellCmdPost'
+"  autocmd BufEnter * echom 'BufEnter'
+"  autocmd BufReadPost * echom 'BufReadPost'
+"  autocmd InsertLeave * echom 'InsertLeave'
 augroup END
-
