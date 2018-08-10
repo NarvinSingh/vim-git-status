@@ -6,7 +6,7 @@ function! gitstatus#GetStatus(...)
   let currentBranch   = ''
   let status          = ''
   let curDir          = trim(system('pwd'))
-  let fileDir         = expand('%:p:h')
+  let fileDir         = fnamemodify(resolve(expand('%:p')), ':h')
   let chgDir          = curDir ==# fileDir ? 0 : 1
   let cmd             = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
   let cmd             .= 'git branch'
@@ -22,7 +22,8 @@ function! gitstatus#GetStatus(...)
 
   if currentBranch !=# ''
     let cmd           = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
-    let cmd           .= 'git status --porcelain ' . shellescape(expand('%:p'))
+    let cmd           .= 'git status --porcelain '
+                      \   . shellescape(resolve(expand('%:p')))
     let cmd           .= chgDir ? '; cd ' . shellescape(curDir) : ''
     let fullStatus    = system(cmd)
 
