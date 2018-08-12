@@ -3,22 +3,14 @@ let s:debug = 0
 function! gitstatus#GetStatus(...)
   let a:branchFormat  = get(a:000, 0, '[%s]')
   let a:statusFormat  = get(a:000, 1, '[%s]')
-  let currentBranch   = ''
   let status          = ''
   let curDir          = trim(system('pwd'))
   let fileDir         = fnamemodify(resolve(expand('%:p')), ':h')
   let chgDir          = curDir ==# fileDir ? 0 : 1
   let cmd             = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
-  let cmd             .= 'git branch'
+  let cmd             .= 'git branch | grep ''^\*\s[^\s]'' | cut -c 3-'
   let cmd             .= chgDir ? '; cd ' . shellescape(curDir) : ''
-  let branches        = split(system(cmd), '\n')
-
-  for branch in branches
-    if strcharpart(branch, 0, 1) ==# '*'
-        let currentBranch = printf(a:branchFormat, strcharpart(branch, 2))
-        break
-    endif
-  endfor
+  let currentBranch   = trim(system(cmd))
 
   if currentBranch !=# ''
     let cmd           = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
