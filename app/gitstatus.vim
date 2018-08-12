@@ -8,7 +8,7 @@ function! gitstatus#GetStatus(...)
   let fileDir         = fnamemodify(resolve(expand('%:p')), ':h')
   let chgDir          = curDir ==# fileDir ? 0 : 1
   let cmd             = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
-  let cmd             .= 'git branch | grep ''^\*\s[^\s]'' | cut -c 3-'
+  let cmd             .= 'git branch | grep -m 1 ''^\*\s'' | cut -c 3-'
   let cmd             .= chgDir ? '; cd ' . shellescape(curDir) : ''
   let currentBranch   = trim(system(cmd))
 
