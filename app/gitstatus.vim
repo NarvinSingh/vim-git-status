@@ -17,16 +17,14 @@ function! gitstatus#GetStatus(...)
     let cmd           .= 'git status --porcelain '
                       \   . shellescape(resolve(expand('%:p')))
     let cmd           .= chgDir ? '; cd ' . shellescape(curDir) : ''
-    let fullStatus    = system(cmd)
+    let porcelain     = system(cmd)
 
-    let status = printf(
-      \ a:statusFormat,
-      \ strcharpart(fullStatus, 2, 1) ==# ' '
-      \   ? strcharpart(fullStatus, 0, 2)
-      \   : '  ')
+    let status = strcharpart(porcelain, 2, 1) ==# ' '
+      \ ? strcharpart(porcelain, 0, 2)
+      \ : '  '
   endif
 
-  return currentBranch . status
+  return printf(a:branchFormat, currentBranch) . printf(a:statusFormat, status)
 endfunction
 
 let s:statusLine = ''
