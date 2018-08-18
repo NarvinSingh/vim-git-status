@@ -4,27 +4,24 @@ function! gitstatus#GetStatus(...)
   let a:branchFormat  = get(a:000, 0, '[%s]')
   let a:statusFormat  = get(a:000, 1, '[%s]')
   let status          = ''
-  let curDir          = trim(system('pwd'))
   let fileDir         = fnamemodify(resolve(expand('%:p')), ':h')
-  let chgDir          = curDir ==# fileDir ? 0 : 1
-  let cmd             = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
-  let cmd             .= 'git branch | grep -m 1 ''^\*\s'' | cut -c 3-'
-  let cmd             .= chgDir ? '; cd ' . shellescape(curDir) : ''
-  let currentBranch   = trim(system(cmd))
+  let cmd             = 'git -C '. shellescape(fileDir) . ' branch'
+  let cmd             .= ' | grep -m 1 ''^\*\s'''
+  let cmd             .= ' | cut -c 3-'
+  let branch          = trim(system(cmd))
 
-  if currentBranch !=# ''
-    let cmd           = chgDir ? 'cd ' . shellescape(fileDir) . '; ' : ''
-    let cmd           .= 'git status --porcelain '
-                      \   . shellescape(resolve(expand('%:p')))
-    let cmd           .= chgDir ? '; cd ' . shellescape(curDir) : ''
+  if branch !=# ''
+    let cmd           = 'git -C ' . shellescape(fileDir)
+    let cmd           .= ' status --porcelain '
+    let cmd           .= shellescape(resolve(expand('%:p')))
     let porcelain     = system(cmd)
 
-    let status = strcharpart(porcelain, 2, 1) ==# ' '
-      \ ? strcharpart(porcelain, 0, 2)
-      \ : '  '
+    let status  = strcharpart(porcelain, 2, 1) ==# ' '
+                \ ? strcharpart(porcelain, 0, 2)
+                \ : '  '
   endif
 
-  return printf(a:branchFormat, currentBranch) . printf(a:statusFormat, status)
+  return printf(a:branchFormat, branch) . printf(a:statusFormat, status)
 endfunction
 
 let s:statusLine = ''
